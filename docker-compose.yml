@@ -1,0 +1,53 @@
+services:
+  act62-db:
+    image: mysql:8.0
+    container_name: act62-db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MYSQL_DATABASE=wordpress
+    volumes:
+      - act62-dbdata:/var/lib/mysql
+    command: '--default-authentication-plugin=mysql_native_password'
+    networks:
+      - act62-network
+
+  act62-wordpress:
+    depends_on:
+      - act62-db
+    image: wordpress:6.7.1-fpm-alpine
+    container_name: act62-wordpress
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - WORDPRESS_DB_HOST=act62-db:3306
+      - WORDPRESS_DB_USER=$MYSQL_USER
+      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - act62-wordpress:/var/www/html
+      - ./php.ini:/usr/local/etc/php/conf.d/php.ini
+    networks:
+      - act62-network
+
+  act62-webserver:
+    depends_on:
+      - act62-wordpress
+    image: nginx:1.26.2-alpine
+    container_name: act62-webserver
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      - act62-wordpress:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+    networks:
+      - act62-network
+
+volumes:
+  act62-wordpress:
+  act62-dbdata:
+
+networks:
+  act62-network:
+    driver: bridge
