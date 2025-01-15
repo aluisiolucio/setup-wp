@@ -8,7 +8,7 @@ services:
       - MYSQL_DATABASE=wordpress
     volumes:
       - dbdata:/var/lib/mysql
-    command: '--default-authentication-plugin=mysql_native_password'
+    command: '--default-authentication-plugin=mysql_native_password --innodb_buffer_pool_size=512M'
     networks:
       - wp-network
 
@@ -25,7 +25,7 @@ services:
       - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
       - WORDPRESS_DB_NAME=wordpress
     volumes:
-      - wordpress:/var/www/html
+      - ./wordpress:/var/www/html
       - ./php.ini:/usr/local/etc/php/conf.d/php.ini
     networks:
       - wp-network
@@ -39,7 +39,7 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - wordpress:/var/www/html
+      - ./wordpress:/var/www/html
       - ./nginx-conf:/etc/nginx/conf.d
     networks:
       - wp-network
